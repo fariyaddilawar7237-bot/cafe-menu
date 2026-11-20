@@ -1,1060 +1,138 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Velvet Bean | Digital Cafe Menu & QR</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts: Playfair Display & Plus Jakarta Sans -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- QRCode.js Library for real scannable QR generation -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <!-- Font Awesome for clean icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        serif: ['"Playfair Display"', 'serif'],
-                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
-                    },
-                    colors: {
-                        espresso: {
-                            950: '#1A110B',
-                            900: '#2C1E16',
-                            800: '#3E2B20',
-                            700: '#593E2E',
-                        },
-                        cream: {
-                            50: '#FDFBF7',
-                            100: '#F7F2EA',
-                            200: '#EDE3D5',
-                            300: '#DFD0BC',
-                        },
-                        gold: {
-                            400: '#D4A359',
-                            500: '#C58F3D',
-                            600: '#A67329',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        /* Custom scrollbar hiding for horizontal category pills */
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-        .no-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-
-        /* Print styles specifically for Table Tent QR Print */
-        @media print {
-            body * {
-                visibility: hidden;
-            }
-            #printable-qr-card, #printable-qr-card * {
-                visibility: visible;
-            }
-            #printable-qr-card {
-                position: fixed;
-                left: 50%;
-                top: 50%;
-                transform: translate(-50%, -50%);
-                width: 340px;
-                border: 2px solid #2C1E16;
-                box-shadow: none !important;
-                background: #FDFBF7 !important;
-            }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Velvet Bean Cafe — Digital Menu</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #FAF7F2; color: #1F1A17; }
+    .font-serif-display { font-family: 'Playfair Display', serif; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    @media print {
+      body * { visibility: hidden; }
+      #print-area, #print-area * { visibility: visible; }
+      #print-area { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: white; }
+    }
+  </style>
 </head>
-<body class="bg-cream-50 text-espresso-900 font-sans antialiased selection:bg-gold-500 selection:text-white pb-28">
+<body class="pb-28">
 
-    <!-- Top Cafe Header -->
-    <header class="bg-espresso-900 text-cream-50 relative overflow-hidden">
-        <!-- Subtle decorative background pattern -->
-        <div class="absolute inset-0 opacity-10 pointer-events-none" style="background-image: radial-gradient(#D4A359 1px, transparent 1px); background-size: 20px 20px;"></div>
-        
-        <div class="max-w-5xl mx-auto px-4 pt-6 pb-8 relative z-10">
-            <!-- Top Row: Table Badge & QR Action Button -->
-            <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
-                <!-- Table Selector Pill -->
-                <div class="inline-flex items-center gap-2 bg-espresso-800/90 border border-espresso-700 px-3.5 py-1.5 rounded-full text-xs sm:text-sm">
-                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                    <span class="text-cream-200">Table:</span>
-                    <select id="headerTableSelect" onchange="updateTableNumber(this.value)" class="bg-transparent font-bold text-gold-400 focus:outline-none cursor-pointer">
-                        <option value="01" class="bg-espresso-900 text-cream-50">#01</option>
-                        <option value="02" class="bg-espresso-900 text-cream-50">#02</option>
-                        <option value="03" class="bg-espresso-900 text-cream-50">#03</option>
-                        <option value="04" selected class="bg-espresso-900 text-cream-50">#04</option>
-                        <option value="05" class="bg-espresso-900 text-cream-50">#05</option>
-                        <option value="06" class="bg-espresso-900 text-cream-50">#06</option>
-                        <option value="07" class="bg-espresso-900 text-cream-50">#07</option>
-                        <option value="08" class="bg-espresso-900 text-cream-50">#08</option>
-                    </select>
-                </div>
-
-                <!-- Show Menu QR Button -->
-                <button onclick="openQrModal()" class="inline-flex items-center gap-2 bg-gold-500 hover:bg-gold-400 active:scale-95 text-espresso-950 font-bold text-xs sm:text-sm px-4 py-2 rounded-full shadow-lg shadow-espresso-950/40 transition-all cursor-pointer">
-                    <i class="fa-solid fa-qrcode text-base"></i>
-                    <span>Menu QR Code</span>
-                </button>
-            </div>
-
-            <!-- Cafe Brand Title & Tagline -->
-            <div class="text-center max-w-xl mx-auto">
-                <div class="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-espresso-800 border border-gold-500/30 text-gold-400 mb-3 shadow-inner">
-                    <i class="fa-solid fa-mug-hot text-xl"></i>
-                </div>
-                <h1 id="displayCafeName" class="font-serif text-3xl sm:text-4xl font-bold tracking-tight text-cream-50">
-                    The Velvet Bean Cafe
-                </h1>
-                <p class="text-cream-300 text-xs sm:text-sm mt-1.5 tracking-wide">
-                    Artisanal Roastery • Fresh Bakes • All-Day Kitchen
-                </p>
-            </div>
+  <!-- Top Header -->
+  <header class="sticky top-0 z-30 bg-[#1F1A17] text-[#FAF7F2] shadow-md">
+    <div class="max-w-3xl mx-auto px-4 py-3.5 flex items-center justify-between gap-2">
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="text-amber-400 text-lg">☕</span>
+          <h1 class="font-serif-display text-lg sm:text-xl font-bold tracking-wide">The Velvet Bean Cafe</h1>
         </div>
-    </header>
+        <p class="text-xs text-stone-300 mt-0.5 flex items-center gap-2">
+          <span id="table-badge" class="bg-amber-500/20 text-amber-300 border border-amber-500/40 px-2 py-0.5 rounded-full font-medium">Table #01</span>
+          <span>• Freshly Brewed Daily</span>
+        </p>
+      </div>
 
-    <!-- Sticky Search & Category Filter Bar -->
-    <div class="sticky top-0 z-30 bg-cream-50/95 backdrop-blur-md border-b border-cream-200 shadow-sm">
-        <div class="max-w-5xl mx-auto px-4 py-3 space-y-3">
-            <!-- Search Input + Veg Only Toggle -->
-            <div class="flex items-center gap-2.5">
-                <div class="relative flex-1">
-                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-espresso-700/60 text-sm"></i>
-                    <input 
-                        type="text" 
-                        id="searchInput" 
-                        oninput="filterMenu()"
-                        placeholder="Search espresso, croissant, avocado toast..." 
-                        class="w-full pl-9 pr-8 py-2.5 bg-white border border-cream-300 rounded-xl text-sm text-espresso-900 placeholder:text-espresso-700/50 focus:outline-none focus:border-gold-500 focus:ring-2 focus:ring-gold-500/20 transition-all"
-                    >
-                    <button id="clearSearchBtn" onclick="clearSearch()" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-espresso-700/60 hover:text-espresso-900">
-                        <i class="fa-solid fa-circle-xmark text-sm"></i>
-                    </button>
-                </div>
-
-                <!-- Pure Veg Toggle Switch -->
-                <button 
-                    id="vegFilterBtn" 
-                    onclick="toggleVegOnly()" 
-                    class="flex items-center gap-2 px-3.5 py-2.5 rounded-xl border border-cream-300 bg-white text-xs sm:text-sm font-semibold text-espresso-800 hover:bg-cream-100 transition-all shrink-0 cursor-pointer"
-                    title="Show Vegetarian Items Only"
-                >
-                    <span class="w-4 h-4 rounded-sm border-2 border-emerald-600 flex items-center justify-center">
-                        <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
-                    </span>
-                    <span class="hidden sm:inline">Veg Only</span>
-                    <span class="sm:hidden">Veg</span>
-                </button>
-            </div>
-
-            <!-- Horizontal Scrollable Category Tabs -->
-            <div id="categoryTabs" class="flex items-center gap-2 overflow-x-auto no-scrollbar pb-0.5">
-                <!-- Populated dynamically via JS -->
-            </div>
-        </div>
+      <button onclick="openQrModal()" class="flex items-center gap-1.5 bg-amber-500 hover:bg-amber-400 text-[#1F1A17] font-semibold text-xs sm:text-sm px-3.5 py-2 rounded-xl transition shadow-sm shrink-0">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3 3h6v6H3V3zm12 0h6v6h-6V3zM3 15h6v6H3v-6zm13 0h2v2h-2v-2zm3 0h2v2h-2v-2zm-3 3h2v3h-2v-3zm3 2h2v1h-2v-1z"/>
+        </svg>
+        <span>Menu QR Code</span>
+      </button>
     </div>
 
-    <!-- Main Menu Container -->
-    <main class="max-w-5xl mx-auto px-4 pt-6">
-        <!-- Active Filter Heading & Item Count -->
-        <div class="flex items-center justify-between mb-4">
-            <h2 id="activeCategoryTitle" class="font-serif text-xl sm:text-2xl font-bold text-espresso-900">
-                All Menu Items
-            </h2>
-            <span id="itemCountBadge" class="text-xs font-semibold bg-cream-200 text-espresso-800 px-3 py-1 rounded-full">
-                16 items
-            </span>
+    <!-- Search & Veg Filter Bar -->
+    <div class="bg-[#29221E] px-4 py-2.5 border-t border-white/10">
+      <div class="max-w-3xl mx-auto flex items-center gap-2.5">
+        <div class="relative flex-1">
+          <input id="search-input" type="text" oninput="renderMenu()" placeholder="Search espresso, croissant, pasta..."
+            class="w-full bg-white/10 text-white placeholder-stone-400 text-sm rounded-xl pl-9 pr-3 py-2 focus:outline-none focus:ring-2 focus:ring-amber-400">
+          <svg class="w-4 h-4 text-stone-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+          </svg>
         </div>
-
-        <!-- Menu Grid -->
-        <div id="menuGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
-            <!-- Menu cards rendered by JS -->
-        </div>
-
-        <!-- Empty Search State -->
-        <div id="emptyState" class="hidden text-center py-16 px-4 bg-white rounded-3xl border border-cream-200 mt-4">
-            <div class="w-16 h-16 rounded-full bg-cream-100 text-espresso-700 mx-auto flex items-center justify-center mb-4">
-                <i class="fa-solid fa-mug-saucer text-2xl"></i>
-            </div>
-            <h3 class="font-serif text-xl font-bold text-espresso-900">No matching items found</h3>
-            <p class="text-sm text-espresso-700 mt-1 max-w-sm mx-auto">Try clearing your search or switching off the Veg Only filter to explore our full menu.</p>
-            <button onclick="resetAllFilters()" class="mt-4 px-5 py-2.5 bg-espresso-900 text-cream-50 rounded-xl text-sm font-semibold hover:bg-espresso-800 transition-all">
-                Reset Filters
-            </button>
-        </div>
-    </main>
-
-    <!-- Floating Bottom Order Bar (Appears when items are added to tray) -->
-    <div id="floatingTrayBar" class="fixed bottom-4 left-4 right-4 z-40 max-w-xl mx-auto transition-all duration-300 translate-y-28 opacity-0 pointer-events-none">
-        <button onclick="openTrayDrawer()" class="w-full bg-espresso-900 hover:bg-espresso-800 text-cream-50 p-3.5 sm:px-5 rounded-2xl shadow-2xl shadow-espresso-950/40 border border-gold-500/30 flex items-center justify-between cursor-pointer active:scale-[0.99] transition-all">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-gold-500 text-espresso-950 font-bold flex items-center justify-center text-base" id="trayBadgeCount">
-                    0
-                </div>
-                <div class="text-left">
-                    <div class="text-xs text-cream-300">Table <span id="trayBarTableNum">#04</span> Tray</div>
-                    <div class="text-base font-bold text-white" id="trayBarTotal">₹0</div>
-                </div>
-            </div>
-            <div class="flex items-center gap-2 font-bold text-sm text-gold-400">
-                <span>View Order</span>
-                <i class="fa-solid fa-chevron-up"></i>
-            </div>
+        <button id="veg-toggle" onclick="toggleVeg()" class="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold border border-stone-600 text-stone-200 transition shrink-0">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span>
+          <span>Veg Only</span>
         </button>
+      </div>
     </div>
 
-    <!-- ===================================================================== -->
-    <!-- MODAL 1: SCANNABLE QR CODE GENERATOR & TABLE TENT MODAL               -->
-    <!-- ===================================================================== -->
-    <div id="qrModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-espresso-950/75 backdrop-blur-sm">
-        <div class="bg-cream-50 w-full max-w-md rounded-3xl shadow-2xl border border-cream-300 overflow-hidden max-h-[92vh] flex flex-col">
-            <!-- Modal Header -->
-            <div class="px-5 py-4 bg-espresso-900 text-cream-50 flex items-center justify-between">
-                <div class="flex items-center gap-2.5">
-                    <i class="fa-solid fa-qrcode text-gold-400 text-lg"></i>
-                    <h3 class="font-serif text-lg font-bold">Scan Menu QR Code</h3>
-                </div>
-                <button onclick="closeQrModal()" class="w-8 h-8 rounded-full bg-espresso-800 hover:bg-espresso-700 text-cream-200 flex items-center justify-center transition-colors cursor-pointer">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
+    <!-- Category Pills -->
+    <div class="bg-[#FAF7F2] text-[#1F1A17] border-b border-stone-200 px-4 py-2.5">
+      <div id="category-tabs" class="max-w-3xl mx-auto flex gap-2 overflow-x-auto no-scrollbar"></div>
+    </div>
+  </header>
 
-            <!-- Modal Body (Scrollable) -->
-            <div class="p-5 overflow-y-auto space-y-5">
-                <!-- Printable Table Tent Preview Card -->
-                <div id="printable-qr-card" class="bg-white border-2 border-cream-300 rounded-2xl p-5 text-center shadow-sm relative">
-                    <div class="text-[11px] uppercase tracking-[0.2em] text-gold-600 font-bold mb-1">Scan With Phone Camera</div>
-                    <h4 id="qrCardCafeName" class="font-serif text-xl font-bold text-espresso-900">The Velvet Bean Cafe</h4>
-                    <div class="inline-block bg-cream-100 border border-cream-300 text-espresso-800 text-xs font-bold px-3 py-0.5 rounded-full mt-1.5 mb-4">
-                        TABLE <span id="qrCardTableLabel">#04</span>
-                    </div>
+  <!-- Menu Items List -->
+  <main class="max-w-3xl mx-auto px-4 pt-4">
+    <div id="menu-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3.5"></div>
+  </main>
 
-                    <!-- Actual Generated QR Code Container -->
-                    <div class="flex justify-center items-center my-1">
-                        <div id="qrcodeContainer" class="p-3 bg-white border-2 border-espresso-900/10 rounded-2xl inline-block shadow-inner"></div>
-                    </div>
+  <!-- Floating Cart Bar -->
+  <div id="cart-bar" class="fixed bottom-4 left-0 right-0 px-4 z-30 hidden">
+    <div class="max-w-3xl mx-auto bg-[#1F1A17] text-white rounded-2xl p-3.5 shadow-xl flex items-center justify-between border border-amber-500/30">
+      <div>
+        <p class="text-xs text-amber-300 font-medium" id="cart-count-text">0 Items Selected</p>
+        <p class="text-base font-bold" id="cart-total-text">₹0</p>
+      </div>
+      <button onclick="openCartModal()" class="bg-amber-500 hover:bg-amber-400 text-[#1F1A17] font-bold text-sm px-5 py-2.5 rounded-xl transition">
+        View Tray & Order →
+      </button>
+    </div>
+  </div>
 
-                    <p class="text-[11px] text-espresso-700 mt-3 font-medium">
-                        Point any phone camera at the QR to open our digital menu instantly.
-                    </p>
-                </div>
+  <!-- QR Code Modal -->
+  <div id="qr-modal" class="fixed inset-0 bg-black/70 z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 text-center shadow-2xl relative">
+      <button onclick="closeQrModal()" class="absolute top-4 right-4 text-stone-400 hover:text-stone-700 text-xl font-bold">✕</button>
+      <span class="text-xs font-bold uppercase tracking-widest text-amber-700 bg-amber-100 px-3 py-1 rounded-full">Scan For Menu</span>
+      <h2 class="font-serif-display text-2xl font-bold mt-2 text-[#1F1A17]">The Velvet Bean Cafe</h2>
+      <p class="text-xs text-stone-500 mt-1">Select Table Number for QR</p>
 
-                <!-- Status Banner explaining URL encoding -->
-                <div id="qrUrlStatusBanner" class="p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 flex items-start gap-2.5">
-                    <i class="fa-solid fa-circle-info text-amber-600 mt-0.5"></i>
-                    <div id="qrUrlStatusText">
-                        Loading menu URL...
-                    </div>
-                </div>
+      <div class="mt-3 flex justify-center">
+        <select id="qr-table-select" onchange="generateQR()" class="border border-stone-300 rounded-xl px-3 py-1.5 text-sm font-semibold bg-stone-50">
+          <option value="01">Table #01</option>
+          <option value="02">Table #02</option>
+          <option value="03">Table #03</option>
+          <option value="04">Table #04</option>
+          <option value="05">Table #05</option>
+          <option value="06">Table #06</option>
+          <option value="07">Table #07</option>
+          <option value="08">Table #08</option>
+        </select>
+      </div>
 
-                <!-- Customization Controls -->
-                <div class="space-y-3 bg-cream-100/80 p-4 rounded-2xl border border-cream-200">
-                    <div class="text-xs font-bold uppercase tracking-wider text-espresso-700">Customize QR Details</div>
-                    
-                    <div class="grid grid-cols-3 gap-2.5">
-                        <div class="col-span-2">
-                            <label class="block text-xs font-semibold text-espresso-800 mb-1">Cafe Name</label>
-                            <input 
-                                type="text" 
-                                id="qrCafeNameInput" 
-                                value="The Velvet Bean Cafe"
-                                oninput="syncCafeNameAndQr()"
-                                class="w-full px-3 py-2 bg-white border border-cream-300 rounded-xl text-xs font-medium text-espresso-900 focus:outline-none focus:border-gold-500"
-                            >
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-espresso-800 mb-1">Table No.</label>
-                            <input 
-                                type="text" 
-                                id="qrTableInput" 
-                                value="04"
-                                maxlength="4"
-                                oninput="syncTableAndQr(this.value)"
-                                class="w-full px-3 py-2 bg-white border border-cream-300 rounded-xl text-xs font-bold text-espresso-900 text-center focus:outline-none focus:border-gold-500"
-                            >
-                        </div>
-                    </div>
+      <div id="print-area" class="my-5 flex flex-col items-center justify-center">
+        <div id="qrcode-box" class="p-4 bg-white border-2 border-stone-200 rounded-2xl shadow-inner inline-block"></div>
+        <p id="qr-label" class="mt-2.5 text-sm font-bold text-[#1F1A17]">Table #01 — Scan to Order</p>
+        <p id="qr-url-preview" class="text-[10px] text-stone-400 break-all mt-1 max-w-[240px]"></p>
+      </div>
 
-                    <div>
-                        <label class="block text-xs font-semibold text-espresso-800 mb-1">
-                            Hosted Menu Link <span class="font-normal text-espresso-700">(Auto-detected or paste your link)</span>
-                        </label>
-                        <input 
-                            type="url" 
-                            id="qrCustomUrlInput" 
-                            placeholder="https://your-cafe-menu.github.io"
-                            oninput="generateQrCode()"
-                            class="w-full px-3 py-2 bg-white border border-cream-300 rounded-xl text-xs text-espresso-900 focus:outline-none focus:border-gold-500"
-                        >
-                    </div>
-                </div>
+      <div class="grid grid-cols-2 gap-2.5">
+        <button onclick="downloadQR()" class="bg-[#1F1A17] text-white text-xs font-semibold py-2.5 rounded-xl hover:bg-stone-800 transition">
+          Download PNG
+        </button>
+        <button onclick="window.print()" class="bg-amber-500 text-[#1F1A17] text-xs font-bold py-2.5 rounded-xl hover:bg-amber-400 transition">
+          Print Table Card
+        </button>
+      </div>
+    </div>
+  </div>
 
-                <!-- Download & Print Actions -->
-                <div class="grid grid-cols-2 gap-3 pt-1">
-                    <button onclick="downloadQrPng()" class="flex items-center justify-center gap-2 py-3 px-4 bg-espresso-900 hover:bg-espresso-800 text-cream-50 font-semibold text-xs sm:text-sm rounded-xl shadow-md transition-all cursor-pointer">
-                        <i class="fa-solid fa-download"></i>
-                        <span>Download PNG</span>
-                    </button>
-                    <button onclick="window.print()" class="flex items-center justify-center gap-2 py-3 px-4 bg-gold-500 hover:bg-gold-400 text-espresso-950 font-bold text-xs sm:text-sm rounded-xl shadow-md transition-all cursor-pointer">
-                        <i class="fa-solid fa-print"></i>
-                        <span>Print Table Card</span>
-                    </button>
-                </div>
-            </div>
+  <!-- Order Tray Modal -->
+  <div id="cart-modal" class="fixed inset-0 bg-black/70 z-50 hidden items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-white rounded-t-3xl sm:rounded-3xl max-w-md w-full p-6 shadow-2xl max-h-[90vh] flex flex-col">
+      <div class="flex items-center justify-between border-b border-stone-200 pb-3">
+        <div>
+          <h2 class="font-serif-display text-xl font-bold">Your Table Order</h2>
+          <p class="text-xs text-stone-500" id="modal-table-info">Ordering for Table #01</p>
         </div>
-    </div>
+        <button onclick="closeCartModal()" class="text-stone-400 hover:text-stone-700 text-xl font-bold">✕</button>
+      </div>
 
-    <!-- ===================================================================== -->
-    <!-- MODAL 2: TABLE ORDER TRAY SLIDE-UP DRAWER                             -->
-    <!-- ===================================================================== -->
-    <div id="trayDrawer" class="fixed inset-0 z-50 hidden items-end sm:items-center justify-center bg-espresso-950/75 backdrop-blur-sm">
-        <div class="bg-cream-50 w-full max-w-lg rounded-t-3xl sm:rounded-3xl shadow-2xl border border-cream-300 overflow-hidden max-h-[90vh] flex flex-col">
-            <!-- Drawer Header -->
-            <div class="px-5 py-4 bg-espresso-900 text-cream-50 flex items-center justify-between">
-                <div>
-                    <h3 class="font-serif text-lg font-bold">Your Table Order</h3>
-                    <p class="text-xs text-gold-400">Table <span id="drawerTableNum">#04</span> • Review & Send</p>
-                </div>
-                <button onclick="closeTrayDrawer()" class="w-8 h-8 rounded-full bg-espresso-800 hover:bg-espresso-700 text-cream-200 flex items-center justify-center transition-colors cursor-pointer">
-                    <i class="fa-solid fa-xmark"></i>
-                </button>
-            </div>
+      <div id="cart-items-list" class="py-3 overflow-y-auto flex-1 space-y-3"></div>
 
-            <!-- Drawer Body -->
-            <div class="p-5 overflow-y-auto flex-1 space-y-4">
-                <div id="trayItemsList" class="space-y-3">
-                    <!-- Selected items rendered here -->
-                </div>
-
-                <!-- Special Cooking / Barista Instructions -->
-                <div>
-                    <label class="block text-xs font-bold text-espresso-800 mb-1.5">Barista / Kitchen Notes (Optional)</label>
-                    <textarea 
-                        id="orderNotes" 
-                        rows="2" 
-                        placeholder="e.g., Extra hot, oat milk, less sugar, serve pastry warm..."
-                        class="w-full px-3.5 py-2.5 bg-white border border-cream-300 rounded-xl text-xs sm:text-sm text-espresso-900 focus:outline-none focus:border-gold-500"
-                    ></textarea>
-                </div>
-
-                <!-- Bill Summary -->
-                <div class="bg-cream-100 p-4 rounded-2xl border border-cream-200 space-y-2 text-sm">
-                    <div class="flex justify-between text-espresso-700">
-                        <span>Item Subtotal</span>
-                        <span id="billSubtotal">₹0</span>
-                    </div>
-                    <div class="flex justify-between text-espresso-700">
-                        <span>GST (5%)</span>
-                        <span id="billTax">₹0</span>
-                    </div>
-                    <div class="border-t border-cream-300 pt-2 flex justify-between font-bold text-base text-espresso-900">
-                        <span>Grand Total</span>
-                        <span id="billGrandTotal">₹0</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Drawer Footer Actions -->
-            <div class="p-4 bg-white border-t border-cream-200 grid grid-cols-2 gap-3">
-                <button onclick="copyOrderSummary()" class="py-3 px-4 rounded-xl border border-espresso-300 text-espresso-900 font-semibold text-xs sm:text-sm hover:bg-cream-100 flex items-center justify-center gap-2 transition-all cursor-pointer">
-                    <i class="fa-regular fa-copy"></i>
-                    <span>Copy Order</span>
-                </button>
-                <button onclick="placeTableOrder()" class="py-3 px-4 rounded-xl bg-espresso-900 hover:bg-espresso-800 text-gold-400 font-bold text-xs sm:text-sm shadow-lg flex items-center justify-center gap-2 transition-all cursor-pointer">
-                    <i class="fa-solid fa-bell-concierge"></i>
-                    <span>Place Order</span>
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Toast Notification Banner (Replaces alert) -->
-    <div id="toastBanner" class="fixed top-5 left-1/2 -translate-x-1/2 z-[60] bg-espresso-900 text-cream-50 px-5 py-3 rounded-2xl shadow-2xl border border-gold-500/40 flex items-center gap-2.5 text-xs sm:text-sm font-medium transition-all duration-300 opacity-0 -translate-y-6 pointer-events-none">
-        <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400 text-base"></i>
-        <span id="toastMessage">Order placed successfully!</span>
-    </div>
-
-    <script>
-        // =========================================================================
-        // 1. MENU DATA (Curated Indian Cafe Pricing in ₹ INR)
-        // =========================================================================
-        const MENU_ITEMS = [
-            // Hot Coffee
-            {
-                id: 1,
-                name: "Signature Velvet Espresso",
-                category: "Hot Coffee",
-                price: 160,
-                isVeg: true,
-                tag: "Bestseller",
-                desc: "Double shot of single-origin Chikmagalur Arabica with rich golden crema and dark cocoa notes.",
-                img: "https://images.unsplash.com/photo-1510591509098-f4fdc6d0ff04?auto=format&fit=crop&w=400&q=80"
-            },
-            {
-                id: 2,
-                name: "Hazelnut Praline Cappuccino",
-                category: "Hot Coffee",
-                price: 230,
-                isVeg: true,
-                tag: "Chef's Special",
-                desc: "Velvety steamed milk poured over rich espresso, infused with roasted Piedmont hazelnut syrup.",
-                img: "https://images.unsplash.com/photo-1572442388796-11668a67e53d?auto=format&fit=crop&w=400&q=80"
-            },
-            {
-                id: 3,
-                name: "Spanish Cortado",
-                category: "Hot Coffee",
-                price: 210,
-                isVeg: true,
-                tag: "",
-                desc: "Equal parts bold espresso and silky warm milk with a hint of caramelized condensed sweetness.",
-                img: "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=400&q=80"
-            },
-            {
-                id: 4,
-                name: "Madagascar Vanilla Flat White",
-                category: "Hot Coffee",
-                price: 240,
-                isVeg: true,
-                tag: "",
-                desc: "Micro-foamed milk folded into a ristretto double shot with real vanilla bean infusion.",
-                img: "https://images.unsplash.com/photo-1577968897966-3d4325b36b61?auto=format&fit=crop&w=400&q=80"
-            },
-
-            // Cold Brews & Iced
-            {
-                id: 5,
-                name: "18-Hour Barrel Cold Brew",
-                category: "Cold Brews & Iced",
-                price: 245,
-                isVeg: true,
-                tag: "Bestseller",
-                desc: "Slow-steeped coarse Arabica grounds served crystal-clear over hand-carved ice blocks.",
-                img: "https://images.unsplash.com/photo-1517701550927-30cf4ba1dba5?auto=format&fit=crop&w=400&q=80"
-            },
-            {
-                id: 6,
-                name: "Iced Vietnamese Shakerato",
-                category: "Cold Brews & Iced",
-                price: 255,
-                isVeg: true,
-                tag: "Chef's Special",
-                desc: "Dark roast espresso vigorously shaken with ice and sweet condensed milk for a frothy finish.",
-                img: "https://images.unsplash.com/photo-1461023058943-07fcbe16d735?auto=format&fit=crop&w=400&q=80"
-            },
-            {
-                id: 7,
-                name: "Salted Caramel Iced Latte",
-                category: "Cold Brews & Iced",
-                price: 265,
-                isVeg: true,
-                tag: "",
-                desc: "Chilled milk and double espresso layered over house-made sea salt caramel drizzle.",
-                img: "https://images.unsplash.com/photo-1578314675249-a6910f80cc4e?auto=format&fit=crop&w=400&q=80"
-            },
-
-            // Artisanal Tea
-            {
-                id: 8,
-                name: "Ceremonial Uji Matcha Latte",
-                category: "Artisanal Tea",
-                price: 275,
-                isVeg: true,
-                tag: "Bestseller",
-                desc: "First-harvest Japanese green tea whisked to perfection with creamy steamed oat or dairy milk.",
-                img: "https://images.unsplash.com/photo-1536256263959-770b48d82b0a?auto=format&fit=crop&w=400&q=80"
-            },
-            {
-                id: 9,
-                name: "Spiced Kashmiri Kahwa Pot",
-                category: "Artisanal Tea",
-                price: 220,
-                isVeg: true,
-                tag: "",
-                desc: "Fragrant green tea brewed with Pampore saffron strands, green cardamom, cinnamon & slivered almonds.",
-                img: "https://images.unsplash.com/photo-1564890369478-c89ca6d9cde9?auto=format&fit=crop&w=400&q=80"
-            },
-            {
-                id: 10,
-                name: "Hibiscus & Peach Iced Tisane",
-                category: "Artisanal Tea",
-                price: 215,
-                isVeg: true,
-                tag: "",
-                desc: "Caffeine-free ruby hibiscus petals steeped with sun-ripened white peach nectar and fresh mint.",
-                img: "https://images.unsplash.com/photo-1556679343-c7306c1976bc?auto=format&fit=crop&w=400&q=80"
-            },
-
-            // Bakery & Pastries
-            {
-                id: 11,
-                name: "French Butter Croissant",
-                category: "Bakery & Pastries",
-                price: 185,
-                isVeg: true,
-                tag: "Freshly Baked",
-                desc: "27 flaky, golden honeycomb layers crafted with cultured Normandy-style butter.",
-                img: "https://images.unsplash.com/photo-1555507036-ab1f4038808a?auto=format&fit=crop&w=400&q=80"
-            },
-            {
-                id: 12,
-                name: "70% Dark Chocolate Pain au Chocolat",
-                category: "Bakery & Pastries",
-                price: 215,
-                isVeg: true,
-                tag: "Bestseller",
-                desc: "Crisp laminated pastry wrapped around two batons of Belgian dark couverture chocolate.",
-                img: "https://images.unsplash.com/photo-1530610476181-d83430b64dcd?auto=format&fit=crop&w=400&q=80"
-            },
-            {
-                id: 13,
-                name: "Tiramisu Mascarpone Jar",
-                category: "Bakery & Pastries",
-                price: 295,
-                isVeg: false,
-                tag: "Chef's Special",
-                desc: "Espresso-soaked savoiardi biscuits layered with whipped mascarpone and Valrhona cocoa dust.",
-                img: "https://images.unsplash.com/photo-1571877227200-a0d98ea607e9?auto=format&fit=crop&w=400&q=80"
-            },
-
-            // All-Day Breakfast
-            {
-                id: 14,
-                name: "Smashed Avocado & Feta Sourdough",
-                category: "All-Day Breakfast",
-                price: 340,
-                isVeg: true,
-                tag: "Bestseller",
-                desc: "Chargrilled artisanal sourdough topped with Hass avocado, pickled shallots, feta & dukkah spice.",
-                img: "https://images.unsplash.com/photo-1541519227354-08fa5d50c44d?auto=format&fit=crop&w=400&q=80"
-            },
-            {
-                id: 15,
-                name: "Truffle Mushroom & Gruyère Omelette",
-                category: "All-Day Breakfast",
-                price: 365,
-                isVeg: false,
-                tag: "Chef's Special",
-                desc: "Three-egg fluffy French omelette filled with sautéed wild mushrooms, aged Gruyère & truffle oil.",
-                img: "https://images.unsplash.com/photo-1510693206972-df098062cb71?auto=format&fit=crop&w=400&q=80"
-            },
-            {
-                id: 16,
-                name: "Smoked Chicken & Pesto Panini",
-                category: "All-Day Breakfast",
-                price: 380,
-                isVeg: false,
-                tag: "",
-                desc: "Pressed ciabatta loaded with herb-roasted chicken, basil pesto, sun-dried tomatoes & mozzarella.",
-                img: "https://images.unsplash.com/photo-1528735602780-2552fd46c7af?auto=format&fit=crop&w=400&q=80"
-            }
-        ];
-
-        const CATEGORIES = [
-            "All",
-            "Hot Coffee",
-            "Cold Brews & Iced",
-            "Artisanal Tea",
-            "Bakery & Pastries",
-            "All-Day Breakfast"
-        ];
-
-        // =========================================================================
-        // 2. APPLICATION STATE
-        // =========================================================================
-        let state = {
-            selectedCategory: "All",
-            searchQuery: "",
-            vegOnly: false,
-            tableNumber: "04",
-            cafeName: "The Velvet Bean Cafe",
-            tray: {} // { itemId: quantity }
-        };
-
-        let qrCodeInstance = null;
-
-        // =========================================================================
-        // 3. INITIALIZATION & URL PARAMETER PARSING
-        // =========================================================================
-        window.addEventListener("DOMContentLoaded", () => {
-            // Check URL for ?table=XX parameter (when scanned via QR!)
-            const urlParams = new URLSearchParams(window.location.search);
-            const tableFromUrl = urlParams.get("table");
-            if (tableFromUrl) {
-                const formattedTable = tableFromUrl.padStart(2, "0");
-                state.tableNumber = formattedTable;
-                const headerSelect = document.getElementById("headerTableSelect");
-                // Add option dynamically if not in 01-08
-                if (![...headerSelect.options].some(opt => opt.value === formattedTable)) {
-                    const opt = document.createElement("option");
-                    opt.value = formattedTable;
-                    opt.textContent = `#${formattedTable}`;
-                    opt.className = "bg-espresso-900 text-cream-50";
-                    headerSelect.appendChild(opt);
-                }
-                headerSelect.value = formattedTable;
-                document.getElementById("qrTableInput").value = formattedTable;
-            }
-
-            // Pre-populate QR Custom URL input with current live URL if http/https
-            const currentHref = window.location.href.split("?")[0];
-            if (currentHref.startsWith("http://") || currentHref.startsWith("https://")) {
-                document.getElementById("qrCustomUrlInput").value = currentHref;
-            }
-
-            updateTableLabels();
-            renderCategoryTabs();
-            renderMenu();
-        });
-
-        // =========================================================================
-        // 4. CATEGORY TABS & MENU RENDERING
-        // =========================================================================
-        function renderCategoryTabs() {
-            const container = document.getElementById("categoryTabs");
-            container.innerHTML = CATEGORIES.map(cat => {
-                const isActive = state.selectedCategory === cat;
-                return `
-                    <button 
-                        onclick="selectCategory('${cat}')"
-                        class="px-4 py-2 rounded-full text-xs sm:text-sm font-semibold whitespace-nowrap transition-all cursor-pointer ${
-                            isActive 
-                            ? 'bg-espresso-900 text-gold-400 shadow-md shadow-espresso-900/20' 
-                            : 'bg-white text-espresso-800 border border-cream-300 hover:bg-cream-100'
-                        }"
-                    >
-                        ${cat}
-                    </button>
-                `;
-            }).join("");
-        }
-
-        function selectCategory(category) {
-            state.selectedCategory = category;
-            document.getElementById("activeCategoryTitle").textContent = 
-                category === "All" ? "All Menu Items" : category;
-            renderCategoryTabs();
-            renderMenu();
-        }
-
-        function filterMenu() {
-            const input = document.getElementById("searchInput");
-            state.searchQuery = input.value.trim().toLowerCase();
-            
-            const clearBtn = document.getElementById("clearSearchBtn");
-            if (state.searchQuery.length > 0) {
-                clearBtn.classList.remove("hidden");
-            } else {
-                clearBtn.classList.add("hidden");
-            }
-            renderMenu();
-        }
-
-        function clearSearch() {
-            document.getElementById("searchInput").value = "";
-            state.searchQuery = "";
-            document.getElementById("clearSearchBtn").classList.add("hidden");
-            renderMenu();
-        }
-
-        function toggleVegOnly() {
-            state.vegOnly = !state.vegOnly;
-            const btn = document.getElementById("vegFilterBtn");
-            if (state.vegOnly) {
-                btn.classList.add("border-emerald-600", "bg-emerald-50", "text-emerald-900");
-                btn.classList.remove("border-cream-300", "bg-white", "text-espresso-800");
-            } else {
-                btn.classList.remove("border-emerald-600", "bg-emerald-50", "text-emerald-900");
-                btn.classList.add("border-cream-300", "bg-white", "text-espresso-800");
-            }
-            renderMenu();
-        }
-
-        function resetAllFilters() {
-            state.selectedCategory = "All";
-            state.searchQuery = "";
-            state.vegOnly = false;
-            document.getElementById("searchInput").value = "";
-            document.getElementById("clearSearchBtn").classList.add("hidden");
-            document.getElementById("activeCategoryTitle").textContent = "All Menu Items";
-            
-            const btn = document.getElementById("vegFilterBtn");
-            btn.classList.remove("border-emerald-600", "bg-emerald-50", "text-emerald-900");
-            btn.classList.add("border-cream-300", "bg-white", "text-espresso-800");
-            
-            renderCategoryTabs();
-            renderMenu();
-        }
-
-        function renderMenu() {
-            const filtered = MENU_ITEMS.filter(item => {
-                const matchCat = state.selectedCategory === "All" || item.category === state.selectedCategory;
-                const matchVeg = !state.vegOnly || item.isVeg;
-                const matchQuery = !state.searchQuery || 
-                    item.name.toLowerCase().includes(state.searchQuery) ||
-                    item.desc.toLowerCase().includes(state.searchQuery) ||
-                    item.category.toLowerCase().includes(state.searchQuery);
-                return matchCat && matchVeg && matchQuery;
-            });
-
-            document.getElementById("itemCountBadge").textContent = `${filtered.length} ${filtered.length === 1 ? 'item' : 'items'}`;
-            
-            const grid = document.getElementById("menuGrid");
-            const emptyState = document.getElementById("emptyState");
-
-            if (filtered.length === 0) {
-                grid.innerHTML = "";
-                emptyState.classList.remove("hidden");
-                return;
-            }
-
-            emptyState.classList.add("hidden");
-            grid.innerHTML = filtered.map(item => {
-                const qtyInTray = state.tray[item.id] || 0;
-                const fallbackUrl = `https://placehold.co/400x400/3E2B20/FDFBF7?text=${encodeURIComponent(item.name.split(' ')[0])}`;
-
-                return `
-                    <article class="bg-white rounded-2xl p-3.5 sm:p-4 border border-cream-200 shadow-sm hover:shadow-md transition-all flex gap-3.5 sm:gap-4 items-center">
-                        <!-- Left: Item Image -->
-                        <div class="relative w-24 h-24 sm:w-28 sm:h-28 rounded-xl overflow-hidden bg-cream-100 shrink-0">
-                            <img 
-                                src="${item.img}" 
-                                alt="${item.name}"
-                                onerror="this.onerror=null; this.src='${fallbackUrl}';"
-                                class="w-full h-full object-cover"
-                                loading="lazy"
-                            >
-                            ${item.tag ? `
-                                <span class="absolute top-1.5 left-1.5 bg-espresso-900/90 backdrop-blur-xs text-gold-400 text-[10px] font-bold px-2 py-0.5 rounded-md">
-                                    ${item.tag}
-                                </span>
-                            ` : ''}
-                        </div>
-
-                        <!-- Right: Details & Add Button -->
-                        <div class="flex-1 min-w-0 flex flex-col justify-between h-full">
-                            <div>
-                                <div class="flex items-center gap-2 mb-1">
-                                    <!-- Indian FSSAI Style Veg/Non-Veg Symbol -->
-                                    ${item.isVeg ? `
-                                        <span class="w-3.5 h-3.5 rounded-xs border border-emerald-600 flex items-center justify-center shrink-0" title="Vegetarian">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
-                                        </span>
-                                    ` : `
-                                        <span class="w-3.5 h-3.5 rounded-xs border border-rose-600 flex items-center justify-center shrink-0" title="Contains Egg / Non-Veg">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-rose-600"></span>
-                                        </span>
-                                    `}
-                                    <span class="text-[11px] font-medium text-espresso-700 truncate">${item.category}</span>
-                                </div>
-
-                                <h3 class="font-serif font-bold text-base sm:text-lg text-espresso-900 leading-snug">
-                                    ${item.name}
-                                </h3>
-                                <p class="text-xs text-espresso-700/85 line-clamp-2 mt-1 leading-relaxed">
-                                    ${item.desc}
-                                </p>
-                            </div>
-
-                            <!-- Price & Add/Qty Controls -->
-                            <div class="flex items-center justify-between mt-3 pt-2 border-t border-cream-100">
-                                <span class="font-bold text-base text-espresso-900">₹${item.price}</span>
-
-                                ${qtyInTray === 0 ? `
-                                    <button 
-                                        onclick="updateTrayQty(${item.id}, 1)"
-                                        class="px-3.5 py-1.5 rounded-xl bg-cream-100 hover:bg-espresso-900 text-espresso-900 hover:text-gold-400 border border-cream-300 hover:border-espresso-900 text-xs font-bold transition-all cursor-pointer active:scale-95"
-                                    >
-                                        + Add
-                                    </button>
-                                ` : `
-                                    <div class="inline-flex items-center bg-espresso-900 text-cream-50 rounded-xl overflow-hidden shadow-sm">
-                                        <button onclick="updateTrayQty(${item.id}, -1)" class="px-2.5 py-1 hover:bg-espresso-700 text-gold-400 font-bold text-sm cursor-pointer">−</button>
-                                        <span class="px-2 text-xs font-bold">${qtyInTray}</span>
-                                        <button onclick="updateTrayQty(${item.id}, 1)" class="px-2.5 py-1 hover:bg-espresso-700 text-gold-400 font-bold text-sm cursor-pointer">+</button>
-                                    </div>
-                                `}
-                            </div>
-                        </div>
-                    </article>
-                `;
-            }).join("");
-        }
-
-        // =========================================================================
-        // 5. ORDER TRAY & BILLING LOGIC
-        // =========================================================================
-        function updateTrayQty(itemId, delta) {
-            const current = state.tray[itemId] || 0;
-            const next = current + delta;
-
-            if (next <= 0) {
-                delete state.tray[itemId];
-            } else {
-                state.tray[itemId] = next;
-            }
-
-            renderMenu();
-            updateFloatingTrayBar();
-            if (!document.getElementById("trayDrawer").classList.contains("hidden")) {
-                renderTrayDrawerItems();
-            }
-        }
-
-        function updateFloatingTrayBar() {
-            const bar = document.getElementById("floatingTrayBar");
-            let totalCount = 0;
-            let subtotal = 0;
-
-            for (const [idStr, qty] of Object.entries(state.tray)) {
-                const item = MENU_ITEMS.find(m => m.id === Number(idStr));
-                if (item) {
-                    totalCount += qty;
-                    subtotal += item.price * qty;
-                }
-            }
-
-            if (totalCount > 0) {
-                document.getElementById("trayBadgeCount").textContent = totalCount;
-                document.getElementById("trayBarTotal").textContent = `₹${subtotal}`;
-                bar.classList.remove("translate-y-28", "opacity-0", "pointer-events-none");
-            } else {
-                bar.classList.add("translate-y-28", "opacity-0", "pointer-events-none");
-                closeTrayDrawer();
-            }
-        }
-
-        function openTrayDrawer() {
-            renderTrayDrawerItems();
-            const drawer = document.getElementById("trayDrawer");
-            drawer.classList.remove("hidden");
-            drawer.classList.add("flex");
-        }
-
-        function closeTrayDrawer() {
-            const drawer = document.getElementById("trayDrawer");
-            drawer.classList.add("hidden");
-            drawer.classList.remove("flex");
-        }
-
-        function renderTrayDrawerItems() {
-            const container = document.getElementById("trayItemsList");
-            let subtotal = 0;
-            let html = "";
-
-            for (const [idStr, qty] of Object.entries(state.tray)) {
-                const item = MENU_ITEMS.find(m => m.id === Number(idStr));
-                if (!item) continue;
-                const lineTotal = item.price * qty;
-                subtotal += lineTotal;
-
-                html += `
-                    <div class="flex items-center justify-between bg-white p-3 rounded-2xl border border-cream-200">
-                        <div class="pr-2">
-                            <div class="font-bold text-sm text-espresso-900">${item.name}</div>
-                            <div class="text-xs text-espresso-700">₹${item.price} × ${qty} = <span class="font-bold text-espresso-900">₹${lineTotal}</span></div>
-                        </div>
-                        <div class="inline-flex items-center bg-cream-100 border border-cream-300 rounded-xl overflow-hidden shrink-0">
-                            <button onclick="updateTrayQty(${item.id}, -1)" class="px-2.5 py-1 hover:bg-cream-200 text-espresso-900 font-bold text-sm cursor-pointer">−</button>
-                            <span class="px-2 text-xs font-bold text-espresso-900">${qty}</span>
-                            <button onclick="updateTrayQty(${item.id}, 1)" class="px-2.5 py-1 hover:bg-cream-200 text-espresso-900 font-bold text-sm cursor-pointer">+</button>
-                        </div>
-                    </div>
-                `;
-            }
-
-            container.innerHTML = html;
-
-            const tax = Math.round(subtotal * 0.05);
-            const grandTotal = subtotal + tax;
-
-            document.getElementById("billSubtotal").textContent = `₹${subtotal}`;
-            document.getElementById("billTax").textContent = `₹${tax}`;
-            document.getElementById("billGrandTotal").textContent = `₹${grandTotal}`;
-        }
-
-        function buildOrderText() {
-            let lines = [
-                `☕ *${state.cafeName} — Table #${state.tableNumber}*`,
-                `--------------------------------`
-            ];
-            let subtotal = 0;
-            for (const [idStr, qty] of Object.entries(state.tray)) {
-                const item = MENU_ITEMS.find(m => m.id === Number(idStr));
-                if (!item) continue;
-                subtotal += item.price * qty;
-                lines.push(`• ${qty}x ${item.name} (₹${item.price * qty})`);
-            }
-            const tax = Math.round(subtotal * 0.05);
-            lines.push(`--------------------------------`);
-            lines.push(`Subtotal: ₹${subtotal} | GST (5%): ₹${tax}`);
-            lines.push(`*Total: ₹${subtotal + tax}*`);
-
-            const notes = document.getElementById("orderNotes").value.trim();
-            if (notes) {
-                lines.push(`Notes: ${notes}`);
-            }
-            return lines.join("\n");
-        }
-
-        function copyOrderSummary() {
-            const text = buildOrderText();
-            const tempTextarea = document.createElement("textarea");
-            tempTextarea.value = text;
-            document.body.appendChild(tempTextarea);
-            tempTextarea.select();
-            document.execCommand("copy");
-            document.body.removeChild(tempTextarea);
-
-            showToast("Order summary copied to clipboard!");
-        }
-
-        function placeTableOrder() {
-            state.tray = {};
-            document.getElementById("orderNotes").value = "";
-            renderMenu();
-            updateFloatingTrayBar();
-            closeTrayDrawer();
-            showToast(`Order sent to kitchen for Table #${state.tableNumber}!`);
-        }
-
-        // =========================================================================
-        // 6. SCANNABLE QR CODE GENERATOR & CUSTOMIZATION
-        // =========================================================================
-        function updateTableNumber(newVal) {
-            state.tableNumber = newVal.padStart(2, "0");
-            document.getElementById("qrTableInput").value = state.tableNumber;
-            updateTableLabels();
-        }
-
-        function syncTableAndQr(val) {
-            const clean = val.trim() || "01";
-            state.tableNumber = clean.padStart(2, "0");
-            updateTableLabels();
-            generateQrCode();
-        }
-
-        function syncCafeNameAndQr() {
-            const val = document.getElementById("qrCafeNameInput").value.trim() || "The Velvet Bean Cafe";
-            state.cafeName = val;
-            document.getElementById("displayCafeName").textContent = val;
-            document.getElementById("qrCardCafeName").textContent = val;
-        }
-
-        function updateTableLabels() {
-            document.getElementById("trayBarTableNum").textContent = `#${state.tableNumber}`;
-            document.getElementById("drawerTableNum").textContent = `#${state.tableNumber}`;
-            document.getElementById("qrCardTableLabel").textContent = `#${state.tableNumber}`;
-        }
-
-        function openQrModal() {
-            const modal = document.getElementById("qrModal");
-            modal.classList.remove("hidden");
-            modal.classList.add("flex");
-            generateQrCode();
-        }
-
-        function closeQrModal() {
-            const modal = document.getElementById("qrModal");
-            modal.classList.add("hidden");
-            modal.classList.remove("flex");
-        }
-
-        function generateQrCode() {
-            const container = document.getElementById("qrcodeContainer");
-            container.innerHTML = ""; // Clear previous QR
-
-            const customUrlInput = document.getElementById("qrCustomUrlInput").value.trim();
-            const currentHref = window.location.href.split("?")[0];
-            const statusBanner = document.getElementById("qrUrlStatusBanner");
-            const statusText = document.getElementById("qrUrlStatusText");
-
-            let baseUrl = "";
-            if (customUrlInput) {
-                baseUrl = customUrlInput;
-            } else if (currentHref.startsWith("http://") || currentHref.startsWith("https://")) {
-                baseUrl = currentHref;
-            } else {
-                // Fallback if opened locally via file:// or sandboxed preview
-                baseUrl = "https://the-velvet-bean-cafe.menu.app";
-            }
-
-            // Append table query parameter cleanly
-            const separator = baseUrl.includes("?") ? "&" : "?";
-            const finalScannableUrl = `${baseUrl}${separator}table=${encodeURIComponent(state.tableNumber)}`;
-
-            // Update explanatory status banner
-            if (customUrlInput || currentHref.startsWith("http://") || currentHref.startsWith("https://")) {
-                statusBanner.className = "p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-900 flex items-start gap-2.5";
-                statusText.innerHTML = `<strong>Live Scannable Link Encoded:</strong><br><span class="break-all font-mono text-[11px] text-emerald-700">${finalScannableUrl}</span>`;
-            } else {
-                statusBanner.className = "p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 flex items-start gap-2.5";
-                statusText.innerHTML = `<strong>Local Preview Mode:</strong> Host this file online (e.g., GitHub Pages / Netlify) or paste your hosted URL below so any phone camera opens your live menu directly.`;
-            }
-
-            // Generate crisp, high-contrast QR Code
-            qrCodeInstance = new QRCode(container, {
-                text: finalScannableUrl,
-                width: 196,
-                height: 196,
-                colorDark: "#1A110B",
-                colorLight: "#FFFFFF",
-                correctLevel: QRCode.CorrectLevel.H
-            });
-        }
-
-        function downloadQrPng() {
-            const container = document.getElementById("qrcodeContainer");
-            const canvas = container.querySelector("canvas");
-            const img = container.querySelector("img");
-
-            let dataUrl = "";
-            if (canvas) {
-                dataUrl = canvas.toDataURL("image/png");
-            } else if (img && img.src) {
-                dataUrl = img.src;
-            }
-
-            if (!dataUrl) {
-                showToast("Unable to generate PNG image.");
-                return;
-            }
-
-            const link = document.createElement("a");
-            link.href = dataUrl;
-            link.download = `${state.cafeName.replace(/\s+/g, "_")}_Table_${state.tableNumber}_QR.png`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            showToast(`Downloaded QR for Table #${state.tableNumber}!`);
-        }
-
-        // =========================================================================
-        // 7. TOAST HELPER
-        // =========================================================================
-        let toastTimeout = null;
-        function showToast(message) {
-            const banner = document.getElementById("toastBanner");
-            document.getElementById("toastMessage").textContent = message;
-
-            banner.classList.remove("opacity-0", "-translate-y-6");
-            clearTimeout(toastTimeout);
-            toastTimeout = setTimeout(() => {
-                banner.classList.add("opacity-0", "-translate-y-6");
-            }, 3000);
-        }
-    </script>
-</body>
-</html>
+      <div class="
